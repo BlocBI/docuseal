@@ -1,9 +1,12 @@
 services:
   app:
+    build: .
     depends_on:
       postgres:
         condition: service_healthy
-    image: docuseal/docuseal:latest
+      redis:
+        condition: service_started
+    # image: docuseal/docuseal:latest
     ports:
       - 3000:3000
     volumes:
@@ -11,6 +14,7 @@ services:
     environment:
       - FORCE_SSL=${HOST}
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/docuseal
+      - REDIS_URL=redis://redis:6379
 
   postgres:
     image: postgres:18
@@ -25,6 +29,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
 
   caddy:
     image: caddy:latest
