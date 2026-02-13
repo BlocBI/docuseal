@@ -40,6 +40,9 @@ COPY ./tailwind.application.config.js ./tailwind.application.config.js
 COPY ./app/javascript ./app/javascript
 COPY ./app/views ./app/views
 
+# Ensure Windows CRLF line endings are removed and the script is executable
+RUN sed -i 's/\r$//' ./bin/shakapacker && chmod +x ./bin/shakapacker
+
 RUN echo "gem 'shakapacker'" > Gemfile && ./bin/shakapacker
 
 FROM ruby:3.4.2-alpine AS app
@@ -83,6 +86,10 @@ COPY --chown=docuseal:docuseal ./public ./public
 COPY --chown=docuseal:docuseal ./tmp ./tmp
 COPY --chown=docuseal:docuseal LICENSE README.md Rakefile config.ru .version ./
 COPY --chown=docuseal:docuseal .version ./public/version
+
+# Normalize line endings and ensure executables in /app/bin are usable
+RUN find /app/bin -type f -exec sed -i 's/\r$//' {} \; || true
+RUN chmod -R +x /app/bin || true
 
 COPY --chown=docuseal:docuseal --from=download /fonts/GoNotoKurrent-Regular.ttf /fonts/GoNotoKurrent-Bold.ttf /fonts/DancingScript-Regular.otf /fonts/OFL.txt /fonts
 COPY --from=download /fonts/FreeSans.ttf /usr/share/fonts/freefont
